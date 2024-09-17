@@ -2,10 +2,11 @@
 
 // Create board
 void Game::InitBoard() {
+	srand(time(NULL));
 	for (int i = 0; i < BOARD_SIZE; ++i) {
 		for (int j = 0; j < BOARD_SIZE; ++j) {
 			game_board[i][j] = 10;
-			if (rand() % 18 == 0) { hided_board[i][j] = 9; }
+			if (rand() % 5 == 0) { hided_board[i][j] = 9; }
 			else { hided_board[i][j] = 0; }
 		}
 	}
@@ -19,12 +20,12 @@ void Game::CountMines() {
 			if (hided_board[i][j] == 9) { continue; }
 			if (hided_board[i + 1][j] == 9) { bombs_count++; }
 			if (hided_board[i][j + 1] == 9) { bombs_count++; }
-			if (hided_board[i + 1][j + 1] == 9) { bombs_count++; }
 			if (hided_board[i - 1][j] == 9) { bombs_count++; }
 			if (hided_board[i][j - 1] == 9) { bombs_count++; }
+			if (hided_board[i + 1][j + 1] == 9) { bombs_count++; }
 			if (hided_board[i - 1][j - 1] == 9) { bombs_count++; }
-			if (hided_board[i + 1][j - 1] == 9) { bombs_count++; }
 			if (hided_board[i - 1][j + 1] == 9) { bombs_count++; }
+			if (hided_board[i + 1][j - 1] == 9) { bombs_count++; }
 			hided_board[i][j] = bombs_count;
 		}
 	}
@@ -34,9 +35,9 @@ void Game::CountMines() {
 void Game::Start() {
 	InitBoard();
 	CountMines();
-	texture.loadFromFile("images/tiles.jpg");
+	texture.loadFromFile("../../../src/images/tiles.jpg");
 	sprite = sf::Sprite(texture);
-	sf::RenderWindow wnd(sf::VideoMode(800, 600), "Minesweeper");
+	sf::RenderWindow wnd(sf::VideoMode(cell_width_*BOARD_SIZE, cell_width_ * BOARD_SIZE), "Minesweeper", sf::Style::Titlebar | sf::Style::Close);
 	while (wnd.isOpen()) {
 		sf::Vector2i mouse_position = sf::Mouse::getPosition(wnd);
 		int pos_x = mouse_position.x / cell_width_, pos_y = mouse_position.y / cell_width_;
@@ -45,12 +46,15 @@ void Game::Start() {
 			if (event.type == sf::Event::Closed) { wnd.close(); }
 			if (event.type == sf::Event::MouseButtonPressed) {
 				if (event.key.code == sf::Mouse::Right) { game_board[pos_x][pos_y] = 11; }
-				if (event.key.code == sf::Mouse::Left) { game_board[pos_x][pos_y] = hided_board[pos_x][pos_y]; }
+				if (event.key.code == sf::Mouse::Left) { 
+					if (game_board[pos_x][pos_y] != 11) { game_board[pos_x][pos_y] = hided_board[pos_x][pos_y]; }
+				}
 			}
 		}
 		wnd.clear(sf::Color::White);
 		for (int i = 0; i < BOARD_SIZE; ++i) {
 			for (int j = 0; j < BOARD_SIZE; ++j) {
+				if (game_board[i][j] == 9) { game_board[i][j] = hided_board[i][j]; }
 				sprite.setTextureRect(sf::IntRect(game_board[i][j]*cell_width_, 0 , cell_width_, cell_width_));
 				sprite.setPosition(i*cell_width_, j*cell_width_);
 				wnd.draw(sprite);
