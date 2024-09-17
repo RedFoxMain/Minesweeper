@@ -1,7 +1,7 @@
 #include "game.h"
 
+// Create board
 void Game::InitBoard() {
-	
 	for (int i = 0; i < BOARD_SIZE; ++i) {
 		for (int j = 0; j < BOARD_SIZE; ++j) {
 			game_board[i][j] = 10;
@@ -11,6 +11,7 @@ void Game::InitBoard() {
 	}
 }
 
+// Count mines around cell
 void Game::CountMines() {
 	for (int i = 0; i < BOARD_SIZE; ++i) {
 		for (int j = 0; j < BOARD_SIZE; ++j) {
@@ -29,6 +30,7 @@ void Game::CountMines() {
 	}
 }
 
+// Start the game
 void Game::Start() {
 	InitBoard();
 	CountMines();

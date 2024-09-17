@@ -14,12 +14,12 @@ private:
 	sf::Sprite sprite;
 
 private:
-	void InitBoard();
-	void CountMines();
+	void InitBoard(); // Create board
+	void CountMines(); // Count mines around cell
 
 public:
 	Game() = default;
-	void Start();
+	void Start(); // Start the game
 };
 
 #endif
