@@ -7,11 +7,9 @@
 
 class Game {
 private:
-	int cell_width_ = 32;
+	int cell_width_ = 32, bombs_ = 0;
 	int hided_board[BOARD_SIZE][BOARD_SIZE];
 	int game_board[BOARD_SIZE][BOARD_SIZE];
-	sf::Texture texture;
-	sf::Sprite sprite;
 
 private:
 	void InitBoard(); // Create board

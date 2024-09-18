@@ -6,10 +6,11 @@ void Game::InitBoard() {
 	for (int i = 0; i < BOARD_SIZE; ++i) {
 		for (int j = 0; j < BOARD_SIZE; ++j) {
 			game_board[i][j] = 10;
-			if (rand() % 5 == 0) { hided_board[i][j] = 9; }
+			if (rand() % 5 == 0) { hided_board[i][j] = 9; bombs_++; }
 			else { hided_board[i][j] = 0; }
 		}
 	}
+	CountMines();
 }
 
 // Count mines around cell
@@ -33,10 +34,11 @@ void Game::CountMines() {
 
 // Start the game
 void Game::Start() {
-	InitBoard();
-	CountMines();
-	texture.loadFromFile("../../../src/images/tiles.jpg");
-	sprite = sf::Sprite(texture);
+	sf::Texture texture;
+	texture.loadFromFile("../../../src/images/tiles.jpg"); // Load assets
+	sf::Sprite sprite(texture);
+	InitBoard(); // Init board hide mines and count them
+	printf("Bombs: %i", bombs_);
 	sf::RenderWindow wnd(sf::VideoMode(cell_width_*BOARD_SIZE, cell_width_ * BOARD_SIZE), "Minesweeper", sf::Style::Titlebar | sf::Style::Close);
 	while (wnd.isOpen()) {
 		sf::Vector2i mouse_position = sf::Mouse::getPosition(wnd);
@@ -45,9 +47,10 @@ void Game::Start() {
 		while (wnd.pollEvent(event)) {
 			if (event.type == sf::Event::Closed) { wnd.close(); }
 			if (event.type == sf::Event::MouseButtonPressed) {
-				if (event.key.code == sf::Mouse::Right) { game_board[pos_x][pos_y] = 11; }
+				if (event.key.code == sf::Mouse::Right) { if (game_board[pos_x][pos_y] == 10) { game_board[pos_x][pos_y] = 11; } }
 				if (event.key.code == sf::Mouse::Left) { 
-					if (game_board[pos_x][pos_y] != 11) { game_board[pos_x][pos_y] = hided_board[pos_x][pos_y]; }
+					if (game_board[pos_x][pos_y] == 10) { game_board[pos_x][pos_y] = hided_board[pos_x][pos_y]; } 
+					if (game_board[pos_x][pos_y] == 11) { game_board[pos_x][pos_y] = 10; }
 				}
 			}
 		}
