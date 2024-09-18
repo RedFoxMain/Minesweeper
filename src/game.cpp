@@ -38,7 +38,6 @@ void Game::Start() {
 	texture.loadFromFile("../../../src/images/tiles.jpg"); // Load assets
 	sf::Sprite sprite(texture);
 	InitBoard(); // Init board hide mines and count them
-	printf("Bombs: %i", bombs_);
 	sf::RenderWindow wnd(sf::VideoMode(cell_width_*BOARD_SIZE, cell_width_ * BOARD_SIZE), "Minesweeper", sf::Style::Titlebar | sf::Style::Close);
 	while (wnd.isOpen()) {
 		sf::Vector2i mouse_position = sf::Mouse::getPosition(wnd);
