@@ -3,11 +3,13 @@
 
 #define BOARD_SIZE 10
 #include <cstdlib>
-#include "SFML/Graphics.hpp"
+
+#include <SFML/Graphics.hpp>
 
 class Game {
 private:
-	int cell_width_ = 32, bombs_ = 0;
+	bool is_alive_;
+	int cell_width_ = 32, flags_;
 	int hided_board[BOARD_SIZE][BOARD_SIZE];
 	int game_board[BOARD_SIZE][BOARD_SIZE];
 

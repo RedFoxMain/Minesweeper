@@ -1,12 +1,13 @@
 #include "game.h"
+#include <iostream>
 
 // Create board
 void Game::InitBoard() {
-	srand(time(NULL));
+	srand(time(NULL)); is_alive_ = true; flags_ = 0;
 	for (int i = 0; i < BOARD_SIZE; ++i) {
 		for (int j = 0; j < BOARD_SIZE; ++j) {
 			game_board[i][j] = 10;
-			if (rand() % 5 == 0) { hided_board[i][j] = 9; bombs_++; }
+			if (rand() % 5 == 0) { hided_board[i][j] = 9; flags_++; }
 			else { hided_board[i][j] = 0; }
 		}
 	}
@@ -37,23 +38,54 @@ void Game::Start() {
 	sf::Texture texture;
 	texture.loadFromFile("../../../src/images/tiles.jpg"); // Load assets
 	sf::Sprite sprite(texture);
+	sf::Font font;
+	font.loadFromFile("../../../src/fonts/arial.ttf"); // loading standart font
+
 	InitBoard(); // Init board hide mines and count them
-	sf::RenderWindow wnd(sf::VideoMode(cell_width_*BOARD_SIZE, cell_width_ * BOARD_SIZE), "Minesweeper", sf::Style::Titlebar | sf::Style::Close);
+	sf::RenderWindow wnd(sf::VideoMode(cell_width_ * BOARD_SIZE + 200, cell_width_ * BOARD_SIZE), "Minesweeper", sf::Style::Titlebar | sf::Style::Close);
+	
+	sf::Text flags; // Ammount of flags
+	flags.setFont(font);
+	flags.setCharacterSize(24);
+	flags.setFillColor(sf::Color::White);
+	flags.setPosition(cell_width_ * BOARD_SIZE + 80, 0);
+
+	sf::Text status; // Game status text
+	status.setFont(font);
+	status.setCharacterSize(18);
+	status.setFillColor(sf::Color::White);
+	status.setPosition(cell_width_ * BOARD_SIZE + 10, 33);
+
+	sf::Text help_text; // Help text
+	help_text.setFont(font);
+	help_text.setCharacterSize(16);
+	help_text.setFillColor(sf::Color::White);
+	help_text.setPosition(cell_width_ * BOARD_SIZE + 10, 60);
+
 	while (wnd.isOpen()) {
+		if (is_alive_) { status.setString(sf::String(L"Статус: Игра")); }
+		else { status.setString(sf::String(L"Статус: Проиграл")); }
+		flags.setString(sf::String(std::to_string(flags_)));
+		help_text.setString(L"Нажми \"R\" для рестарта");
+
 		sf::Vector2i mouse_position = sf::Mouse::getPosition(wnd);
 		int pos_x = mouse_position.x / cell_width_, pos_y = mouse_position.y / cell_width_;
 		sf::Event event;
 		while (wnd.pollEvent(event)) {
 			if (event.type == sf::Event::Closed) { wnd.close(); }
 			if (event.type == sf::Event::MouseButtonPressed) {
-				if (event.key.code == sf::Mouse::Right) { if (game_board[pos_x][pos_y] == 10) { game_board[pos_x][pos_y] = 11; } }
-				if (event.key.code == sf::Mouse::Left) { 
-					if (game_board[pos_x][pos_y] == 10) { game_board[pos_x][pos_y] = hided_board[pos_x][pos_y]; } 
-					if (game_board[pos_x][pos_y] == 11) { game_board[pos_x][pos_y] = 10; }
+				if (is_alive_ && event.key.code == sf::Mouse::Right) { if (game_board[pos_x][pos_y] == 10) { game_board[pos_x][pos_y] = 11; flags_--; } }
+				if (is_alive_ && event.key.code == sf::Mouse::Left) {
+					if (game_board[pos_x][pos_y] == 10) {
+						game_board[pos_x][pos_y] = hided_board[pos_x][pos_y];
+						if (game_board[pos_x][pos_y] == 9) { is_alive_ = false; }
+					} 
+					if (game_board[pos_x][pos_y] == 11) { game_board[pos_x][pos_y] = 10; flags_++; }
 				}
 			}
+			if (event.type == sf::Event::KeyPressed) { if (event.key.code == sf::Keyboard::R) { InitBoard(); } }
 		}
-		wnd.clear(sf::Color::White);
+		wnd.clear();
 		for (int i = 0; i < BOARD_SIZE; ++i) {
 			for (int j = 0; j < BOARD_SIZE; ++j) {
 				if (game_board[i][j] == 9) { game_board[i][j] = hided_board[i][j]; }
@@ -62,6 +94,9 @@ void Game::Start() {
 				wnd.draw(sprite);
 			}
 		}
+		wnd.draw(status);
+		wnd.draw(help_text);
+		wnd.draw(flags);
 		wnd.display();
 	}
 }
