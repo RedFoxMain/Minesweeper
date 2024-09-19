@@ -1,5 +1,4 @@
 #include "game.h"
-#include <iostream>
 
 // Create board
 void Game::InitBoard() {
@@ -44,6 +43,10 @@ void Game::Start() {
 	InitBoard(); // Init board hide mines and count them
 	sf::RenderWindow wnd(sf::VideoMode(cell_width_ * BOARD_SIZE + 200, cell_width_ * BOARD_SIZE), "Minesweeper", sf::Style::Titlebar | sf::Style::Close);
 	
+	sf::Image icon;
+	icon.loadFromFile("../../../src/images/main_icon.png"); // Set icon to window
+	wnd.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
+
 	sf::Text flags; // Ammount of flags
 	flags.setFont(font);
 	flags.setCharacterSize(24);
