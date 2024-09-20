@@ -6,7 +6,7 @@ project ("Minesweeper")
 set(SFML_DIR "${CMAKE_SOURCE_DIR}/include/SFML-2.6.1/lib/cmake/SFML")
 set(SFML_STATIC_LIBRARIES TRUE)
 include_directories(${SFML_INCLUDE_DIR})
-find_package(SFML 2.6.1 COMPONENTS system window graphics audio network REWQUIRED)
+find_package(SFML 2.6.1 COMPONENTS system window graphics audio network OpenAL REWQUIRED)
 
 set(
 	PROJECT_FILES
@@ -16,4 +16,4 @@ set(
 )
 
 add_executable("Minesweeper" ${PROJECT_FILES})
-target_link_libraries("Minesweeper" sfml-system sfml-window sfml-graphics sfml-audio sfml-network)
+target_link_libraries("Minesweeper" sfml-system sfml-window sfml-graphics sfml-audio sfml-network OpenAL)

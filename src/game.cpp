@@ -40,6 +40,10 @@ void Game::Start() {
 	sf::Font font;
 	font.loadFromFile("../../../src/fonts/arial.ttf"); // loading standart font
 
+	sf::SoundBuffer buffer; // Bug here. Cannot find openal32.dll
+	buffer.loadFromFile("../../../src/sounds/explosion.mp3");
+	sf::Sound explosion(buffer);
+
 	InitBoard(); // Init board hide mines and count them
 	sf::RenderWindow wnd(sf::VideoMode(cell_width_ * BOARD_SIZE + 200, cell_width_ * BOARD_SIZE), "Minesweeper", sf::Style::Titlebar | sf::Style::Close);
 	
@@ -81,7 +85,7 @@ void Game::Start() {
 				if (is_alive_ && event.key.code == sf::Mouse::Left) {
 					if (game_board[pos_x][pos_y] == 10) {
 						game_board[pos_x][pos_y] = hided_board[pos_x][pos_y];
-						if (game_board[pos_x][pos_y] == 9) { is_alive_ = false; }
+						if (game_board[pos_x][pos_y] == 9) { explosion.play(); is_alive_ = false; }
 					} 
 					if (game_board[pos_x][pos_y] == 11) { game_board[pos_x][pos_y] = 10; flags_++; }
 				}
