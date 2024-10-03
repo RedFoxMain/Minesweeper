@@ -1,7 +1,8 @@
 #include "game.h"
+#include <iostream>
 
 // Create board
-void Game::InitBoard() {
+void Game::initBoard() {
 	srand(time(NULL)); is_alive_ = true; flags_ = 0;
 	for (int i = 0; i < BOARD_SIZE; ++i) {
 		for (int j = 0; j < BOARD_SIZE; ++j) {
@@ -10,11 +11,11 @@ void Game::InitBoard() {
 			else { hided_board[i][j] = 0; }
 		}
 	}
-	CountMines();
+	countMines();
 }
 
 // Count mines around cell
-void Game::CountMines() {
+void Game::countMines() {
 	for (int i = 0; i < BOARD_SIZE; ++i) {
 		for (int j = 0; j < BOARD_SIZE; ++j) {
 			int bombs_count = 0;
@@ -32,78 +33,81 @@ void Game::CountMines() {
 	}
 }
 
+void Game::loadAllAssets() {
+	// Load main assets
+	texture_.loadFromFile("../../../src/images/tiles.jpg"); 
+	sprite_.setTexture(texture_);
+
+	// Set icon to window
+	icon_.loadFromFile("../../../src/images/main_icon.png"); // Set icon to window
+	wnd_.setIcon(icon_.getSize().x, icon_.getSize().y, icon_.getPixelsPtr());
+
+	// Load Font
+	font_.loadFromFile("../../../src/fonts/arial.ttf");
+
+	// Load eplosion sound
+	buffer_.loadFromFile("../../../src/sounds/explosion.mp3");
+	eplosion_sound_.setBuffer(buffer_);
+
+	// Set flags count
+	display_flags_.setFont(font_);
+	display_flags_.setCharacterSize(32);
+	display_flags_.setFillColor(sf::Color::Black);
+	display_flags_.setPosition(140, 10);
+}
+
+void Game::openEmptyCells() {
+	for (int i = 0; i < BOARD_SIZE; ++i) {
+		for (int j = 0; j < BOARD_SIZE; ++j) {
+			if (hided_board[i][j] == 9) { continue; }
+			if (hided_board[i + 1][j] == 0 || 
+				hided_board[i][j + 1] == 0 || 
+				hided_board[i - 1][j] == 0 ||
+				hided_board[i][j - 1] == 0 || 
+				hided_board[i + 1][j + 1] == 0 || 
+				hided_board[i - 1][j - 1] == 0 || 
+				hided_board[i - 1][j + 1] == 0 ||
+				hided_board[i + 1][j - 1] == 0) { game_board[i][j] = hided_board[i][j]; }
+		}
+	}
+}
+
 // Start the game
 void Game::Start() {
-	sf::Texture texture;
-	texture.loadFromFile("../../../src/images/tiles.jpg"); // Load assets
-	sf::Sprite sprite(texture);
-	sf::Font font;
-	font.loadFromFile("../../../src/fonts/arial.ttf"); // loading standart font
+	initBoard(); // Init board hide mines and count them
+	wnd_.create(sf::VideoMode(cell_width_ * BOARD_SIZE, (cell_width_+6.4) * BOARD_SIZE), "Minesweeper", sf::Style::Titlebar | sf::Style::Close);
+	loadAllAssets();
 
-	sf::SoundBuffer buffer; // Bug here. Cannot find openal32.dll
-	buffer.loadFromFile("../../../src/sounds/explosion.mp3");
-	sf::Sound explosion(buffer);
-
-	InitBoard(); // Init board hide mines and count them
-	sf::RenderWindow wnd(sf::VideoMode(cell_width_ * BOARD_SIZE + 200, cell_width_ * BOARD_SIZE), "Minesweeper", sf::Style::Titlebar | sf::Style::Close);
-	
-	sf::Image icon;
-	icon.loadFromFile("../../../src/images/main_icon.png"); // Set icon to window
-	wnd.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
-
-	sf::Text flags; // Ammount of flags
-	flags.setFont(font);
-	flags.setCharacterSize(24);
-	flags.setFillColor(sf::Color::White);
-	flags.setPosition(cell_width_ * BOARD_SIZE + 80, 0);
-
-	sf::Text status; // Game status text
-	status.setFont(font);
-	status.setCharacterSize(18);
-	status.setFillColor(sf::Color::White);
-	status.setPosition(cell_width_ * BOARD_SIZE + 10, 33);
-
-	sf::Text help_text; // Help text
-	help_text.setFont(font);
-	help_text.setCharacterSize(16);
-	help_text.setFillColor(sf::Color::White);
-	help_text.setPosition(cell_width_ * BOARD_SIZE + 10, 60);
-
-	while (wnd.isOpen()) {
-		if (is_alive_) { status.setString(sf::String(L"Статус: Игра")); }
-		else { status.setString(sf::String(L"Статус: Проиграл")); }
-		flags.setString(sf::String(std::to_string(flags_)));
-		help_text.setString(L"Нажми \"R\" для рестарта");
-
-		sf::Vector2i mouse_position = sf::Mouse::getPosition(wnd);
-		int pos_x = mouse_position.x / cell_width_, pos_y = mouse_position.y / cell_width_;
+	while (wnd_.isOpen()) {
+		display_flags_.setString(std::to_string(flags_));
+		sf::Vector2i mouse_position = sf::Mouse::getPosition(wnd_);
+		int pos_x = mouse_position.x / cell_width_, pos_y = mouse_position.y / cell_width_ - 2;
 		sf::Event event;
-		while (wnd.pollEvent(event)) {
-			if (event.type == sf::Event::Closed) { wnd.close(); }
+		while (wnd_.pollEvent(event)) {
+			if (event.type == sf::Event::Closed) { wnd_.close(); }
 			if (event.type == sf::Event::MouseButtonPressed) {
 				if (is_alive_ && event.key.code == sf::Mouse::Right) { if (game_board[pos_x][pos_y] == 10) { game_board[pos_x][pos_y] = 11; flags_--; } }
 				if (is_alive_ && event.key.code == sf::Mouse::Left) {
 					if (game_board[pos_x][pos_y] == 10) {
 						game_board[pos_x][pos_y] = hided_board[pos_x][pos_y];
-						if (game_board[pos_x][pos_y] == 9) { explosion.play(); is_alive_ = false; }
+						if (game_board[pos_x][pos_y] == 0) { openEmptyCells(); }
+						if (game_board[pos_x][pos_y] == 9) { eplosion_sound_.play(); is_alive_ = false; }
 					} 
-					if (game_board[pos_x][pos_y] == 11) { game_board[pos_x][pos_y] = 10; flags_++; }
+					if (game_board[pos_x][pos_y] == 11) { game_board[pos_x][pos_y] = 10; flags_++; } 
 				}
 			}
-			if (event.type == sf::Event::KeyPressed) { if (event.key.code == sf::Keyboard::R) { InitBoard(); } }
+			if (event.type == sf::Event::KeyPressed) { if (event.key.code == sf::Keyboard::R) { initBoard(); } }
 		}
-		wnd.clear();
+		wnd_.clear(sf::Color::White);
 		for (int i = 0; i < BOARD_SIZE; ++i) {
 			for (int j = 0; j < BOARD_SIZE; ++j) {
 				if (game_board[i][j] == 9) { game_board[i][j] = hided_board[i][j]; }
-				sprite.setTextureRect(sf::IntRect(game_board[i][j]*cell_width_, 0 , cell_width_, cell_width_));
-				sprite.setPosition(i*cell_width_, j*cell_width_);
-				wnd.draw(sprite);
+				sprite_.setTextureRect(sf::IntRect(game_board[i][j]*cell_width_, 0 , cell_width_, cell_width_));
+				sprite_.setPosition(i*cell_width_, (j+2)*cell_width_);
+				wnd_.draw(sprite_);
 			}
 		}
-		wnd.draw(status);
-		wnd.draw(help_text);
-		wnd.draw(flags);
-		wnd.display();
+		wnd_.draw(display_flags_);
+		wnd_.display();
 	}
 }
