@@ -16,4 +16,4 @@ set(
 )
 
 add_executable("Minesweeper" ${PROJECT_FILES})
-target_link_libraries("Minesweeper" sfml-system sfml-window sfml-graphics sfml-audio sfml-network OpenAL)
+target_link_libraries("Minesweeper" sfml-system sfml-window sfml-graphics sfml-audio sfml-network)
