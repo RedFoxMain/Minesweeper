@@ -9,10 +9,11 @@
 
 class Game {
 private:
-	bool is_alive_;
-	int cell_width_ = 32, flags_;
+	bool is_alive_, win_;
+	int cell_width_ = 32, flags_, guessed_positions_, bombs_;
 	int hided_board[BOARD_SIZE][BOARD_SIZE];
 	int game_board[BOARD_SIZE][BOARD_SIZE];
+	int test[10][10];
 
 	sf::Texture texture_;
 	sf::Sprite sprite_;
@@ -27,8 +28,10 @@ private:
 	void initBoard(); // Create board
 	void countMines(); // Count mines around cell
 	void loadAllAssets(); // Load font, sprites, texture, etc.
-	void openEmptyCells(); // Open Empty Cell around Cell
-
+	void openEmptyCells(int x, int y); // Open Empty Cell around Cell
+	void displayCells(); // Draw all cells
+	void showAllBombs(); // After deth show bombs positions
+	 
 public:
 	Game() = default;
 	void Start(); // Start the game

@@ -1,13 +1,12 @@
 #include "game.h"
-#include <iostream>
 
 // Create board
 void Game::initBoard() {
-	srand(time(NULL)); is_alive_ = true; flags_ = 0;
+	srand(time(NULL)); is_alive_ = true; win_ = false; flags_ = 0; guessed_positions_ = 0; bombs_ = 0;
 	for (int i = 0; i < BOARD_SIZE; ++i) {
 		for (int j = 0; j < BOARD_SIZE; ++j) {
 			game_board[i][j] = 10;
-			if (rand() % 5 == 0) { hided_board[i][j] = 9; flags_++; }
+			if (rand() % 5 == 0) { hided_board[i][j] = 9; bombs_++; flags_ = bombs_; }
 			else { hided_board[i][j] = 0; }
 		}
 	}
@@ -33,6 +32,7 @@ void Game::countMines() {
 	}
 }
 
+// Load all images, sounds and fonts
 void Game::loadAllAssets() {
 	// Load main assets
 	texture_.loadFromFile("../../../src/images/tiles.jpg"); 
@@ -56,18 +56,25 @@ void Game::loadAllAssets() {
 	display_flags_.setPosition(140, 10);
 }
 
-void Game::openEmptyCells() {
+// Open empty cells around
+void Game::openEmptyCells(int x, int y) {}
+
+// Display all cells on window
+void Game::displayCells() {
 	for (int i = 0; i < BOARD_SIZE; ++i) {
 		for (int j = 0; j < BOARD_SIZE; ++j) {
-			if (hided_board[i][j] == 9) { continue; }
-			if (hided_board[i + 1][j] == 0 || 
-				hided_board[i][j + 1] == 0 || 
-				hided_board[i - 1][j] == 0 ||
-				hided_board[i][j - 1] == 0 || 
-				hided_board[i + 1][j + 1] == 0 || 
-				hided_board[i - 1][j - 1] == 0 || 
-				hided_board[i - 1][j + 1] == 0 ||
-				hided_board[i + 1][j - 1] == 0) { game_board[i][j] = hided_board[i][j]; }
+			if (game_board[i][j] == 9) { game_board[i][j] = hided_board[i][j]; }
+			sprite_.setTextureRect(sf::IntRect(game_board[i][j] * cell_width_, 0, cell_width_, cell_width_));
+			sprite_.setPosition(i * cell_width_, (j + 2) * cell_width_);
+			wnd_.draw(sprite_);
+		}
+	}
+}
+
+void Game::showAllBombs() {
+	for (int i = 0; i < BOARD_SIZE; ++i) {
+		for (int j = 0; j < BOARD_SIZE; ++j) {
+			if (hided_board[i][j] == 9) { game_board[i][j] = hided_board[i][j]; }
 		}
 	}
 }
@@ -83,14 +90,16 @@ void Game::Start() {
 		sf::Vector2i mouse_position = sf::Mouse::getPosition(wnd_);
 		int pos_x = mouse_position.x / cell_width_, pos_y = mouse_position.y / cell_width_ - 2;
 		sf::Event event;
+		if (!is_alive_) { showAllBombs();  }
 		while (wnd_.pollEvent(event)) {
 			if (event.type == sf::Event::Closed) { wnd_.close(); }
 			if (event.type == sf::Event::MouseButtonPressed) {
-				if (is_alive_ && event.key.code == sf::Mouse::Right) { if (game_board[pos_x][pos_y] == 10) { game_board[pos_x][pos_y] = 11; flags_--; } }
-				if (is_alive_ && event.key.code == sf::Mouse::Left) {
+				if ((win_ || is_alive_) && event.key.code == sf::Mouse::Right) { if (game_board[pos_x][pos_y] == 10) { game_board[pos_x][pos_y] = 11; flags_--; } }
+				if ((win_ || is_alive_) && event.key.code == sf::Mouse::Left) {
 					if (game_board[pos_x][pos_y] == 10) {
 						game_board[pos_x][pos_y] = hided_board[pos_x][pos_y];
-						if (game_board[pos_x][pos_y] == 0) { openEmptyCells(); }
+						if (game_board[pos_x][pos_y] == 11 && hided_board[pos_x][pos_y] == 9) { game_board[pos_x][pos_y] = hided_board[pos_x][pos_y]; guessed_positions_++; }
+						if (guessed_positions_ == bombs_) { win_ = true; }
 						if (game_board[pos_x][pos_y] == 9) { eplosion_sound_.play(); is_alive_ = false; }
 					} 
 					if (game_board[pos_x][pos_y] == 11) { game_board[pos_x][pos_y] = 10; flags_++; } 
@@ -98,15 +107,9 @@ void Game::Start() {
 			}
 			if (event.type == sf::Event::KeyPressed) { if (event.key.code == sf::Keyboard::R) { initBoard(); } }
 		}
+		
 		wnd_.clear(sf::Color::White);
-		for (int i = 0; i < BOARD_SIZE; ++i) {
-			for (int j = 0; j < BOARD_SIZE; ++j) {
-				if (game_board[i][j] == 9) { game_board[i][j] = hided_board[i][j]; }
-				sprite_.setTextureRect(sf::IntRect(game_board[i][j]*cell_width_, 0 , cell_width_, cell_width_));
-				sprite_.setPosition(i*cell_width_, (j+2)*cell_width_);
-				wnd_.draw(sprite_);
-			}
-		}
+		displayCells();
 		wnd_.draw(display_flags_);
 		wnd_.display();
 	}
