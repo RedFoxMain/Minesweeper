@@ -1,6 +1,7 @@
 #include "game.h"
+#include "Windows.h"
 
-int main() {
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nCmdShow){
 	Game app;
 	app.Start();
 	return 0;

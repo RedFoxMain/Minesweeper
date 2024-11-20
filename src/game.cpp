@@ -6,10 +6,11 @@ void Game::initBoard() {
 	for (int i = 0; i < BOARD_SIZE; ++i) {
 		for (int j = 0; j < BOARD_SIZE; ++j) {
 			game_board[i][j] = 10;
-			if (rand() % 5 == 0) { hided_board[i][j] = 9; bombs_++; flags_ = bombs_; }
+			if (rand() % 5 == 0 && bombs_ < 10) { hided_board[i][j] = 9; bombs_++; flags_ = bombs_; }
 			else { hided_board[i][j] = 0; }
 		}
 	}
+	loadAllAssets();
 	countMines();
 }
 
@@ -57,7 +58,21 @@ void Game::loadAllAssets() {
 }
 
 // Open empty cells around
-void Game::openEmptyCells(int x, int y) {}
+void Game::openEmptyCells(int x, int y) {
+	if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE) { return; }
+	if (game_board[x][y] != 10) { return; }
+	game_board[x][y] = hided_board[x][y];
+	if (hided_board[x][y] == 0) {
+		openEmptyCells(x - 1, y); 
+		openEmptyCells(x + 1, y); 
+		openEmptyCells(x, y - 1); 
+		openEmptyCells(x, y + 1); 
+		openEmptyCells(x - 1, y - 1); 
+		openEmptyCells(x - 1, y + 1); 
+		openEmptyCells(x + 1, y - 1); 
+		openEmptyCells(x + 1, y + 1); 
+	}
+}
 
 // Display all cells on window
 void Game::displayCells() {
@@ -74,34 +89,44 @@ void Game::displayCells() {
 void Game::showAllBombs() {
 	for (int i = 0; i < BOARD_SIZE; ++i) {
 		for (int j = 0; j < BOARD_SIZE; ++j) {
-			if (hided_board[i][j] == 9) { game_board[i][j] = hided_board[i][j]; }
+			if (hided_board[i][j] == 9 && game_board[i][j] != 11) { game_board[i][j] = hided_board[i][j]; }
 		}
 	}
 }
 
 // Start the game
 void Game::Start() {
-	initBoard(); // Init board hide mines and count them
-	wnd_.create(sf::VideoMode(cell_width_ * BOARD_SIZE, (cell_width_+6.4) * BOARD_SIZE), "Minesweeper", sf::Style::Titlebar | sf::Style::Close);
-	loadAllAssets();
+	wnd_.create(sf::VideoMode(cell_width_ * BOARD_SIZE, (cell_width_ + 6.4) * BOARD_SIZE), "Minesweeper", sf::Style::Titlebar | sf::Style::Close);
+	initBoard(); // Init board hide mines and count them and load all assets
 
 	while (wnd_.isOpen()) {
 		display_flags_.setString(std::to_string(flags_));
 		sf::Vector2i mouse_position = sf::Mouse::getPosition(wnd_);
 		int pos_x = mouse_position.x / cell_width_, pos_y = mouse_position.y / cell_width_ - 2;
 		sf::Event event;
-		if (!is_alive_) { showAllBombs();  }
+		if (!is_alive_) {
+			display_flags_.setPosition(120, 10);
+			display_flags_.setString("DEAD"); 
+			showAllBombs(); 
+		}
+		if (flags_ == 0 && guessed_positions_ == bombs_) { 
+			display_flags_.setPosition(120, 10);
+			display_flags_.setString("WIN"); 
+			is_alive_ = false; 
+		}
 		while (wnd_.pollEvent(event)) {
 			if (event.type == sf::Event::Closed) { wnd_.close(); }
 			if (event.type == sf::Event::MouseButtonPressed) {
-				if ((win_ || is_alive_) && event.key.code == sf::Mouse::Right) { if (game_board[pos_x][pos_y] == 10) { game_board[pos_x][pos_y] = 11; flags_--; } }
-				if ((win_ || is_alive_) && event.key.code == sf::Mouse::Left) {
+				if (is_alive_ && event.key.code == sf::Mouse::Right) { 
+					if (game_board[pos_x][pos_y] == 10) { game_board[pos_x][pos_y] = 11; flags_--; }
+					if (game_board[pos_x][pos_y] == 11 && hided_board[pos_x][pos_y] == 9) { guessed_positions_++; }
+				}
+				if (is_alive_ && event.key.code == sf::Mouse::Left) {
 					if (game_board[pos_x][pos_y] == 10) {
+						if (hided_board[pos_x][pos_y] == 0) { openEmptyCells(pos_x, pos_y); }
+						if (hided_board[pos_x][pos_y] == 9) { eplosion_sound_.play();  is_alive_ = false; }
 						game_board[pos_x][pos_y] = hided_board[pos_x][pos_y];
-						if (game_board[pos_x][pos_y] == 11 && hided_board[pos_x][pos_y] == 9) { game_board[pos_x][pos_y] = hided_board[pos_x][pos_y]; guessed_positions_++; }
-						if (guessed_positions_ == bombs_) { win_ = true; }
-						if (game_board[pos_x][pos_y] == 9) { eplosion_sound_.play(); is_alive_ = false; }
-					} 
+					}
 					if (game_board[pos_x][pos_y] == 11) { game_board[pos_x][pos_y] = 10; flags_++; } 
 				}
 			}

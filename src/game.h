@@ -27,7 +27,7 @@ private:
 	void initBoard(); // Create board
 	void countMines(); // Count mines around cell
 	void loadAllAssets(); // Load font, sprites, texture, etc.
-	void openEmptyCells(int x, int y); // Open Empty Cell around Cell
+	void openEmptyCells(int, int); // Open Empty Cell around Cell
 	void displayCells(); // Draw all cells
 	void showAllBombs(); // After deth show bombs positions
 	 
