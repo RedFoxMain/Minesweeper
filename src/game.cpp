@@ -5,9 +5,9 @@ void Game::initBoard() {
 	srand(time(NULL)); is_alive_ = true; win_ = false; flags_ = 0; guessed_positions_ = 0; bombs_ = 0;
 	for (int i = 0; i < BOARD_SIZE; ++i) {
 		for (int j = 0; j < BOARD_SIZE; ++j) {
-			game_board[i][j] = 10;
-			if (rand() % 5 == 0 && bombs_ < 10) { hided_board[i][j] = 9; bombs_++; flags_ = bombs_; }
-			else { hided_board[i][j] = 0; }
+			this->game_board[i][j] = 10;
+			if (rand() % 5 == 0 && bombs_ < 10) { this->hided_board[i][j] = 9; bombs_++; flags_ = bombs_; }
+			else { this->hided_board[i][j] = 0; }
 		}
 	}
 	loadAllAssets();
@@ -16,19 +16,27 @@ void Game::initBoard() {
 
 // Count mines around cell
 void Game::countMines() {
+	const int offsets[8][2] = {
+		{-1, -1}, {-1, 0}, {-1, 1},
+		{0, -1},  {0, 1},  {1, -1}, 
+		{1, 0},   {1, 1}
+	};
+
 	for (int i = 0; i < BOARD_SIZE; ++i) {
 		for (int j = 0; j < BOARD_SIZE; ++j) {
+			if (this->hided_board[i][j] == 9) {
+				continue;
+			}
+
 			int bombs_count = 0;
-			if (hided_board[i][j] == 9) { continue; }
-			if (hided_board[i + 1][j] == 9) { bombs_count++; }
-			if (hided_board[i][j + 1] == 9) { bombs_count++; }
-			if (hided_board[i - 1][j] == 9) { bombs_count++; }
-			if (hided_board[i][j - 1] == 9) { bombs_count++; }
-			if (hided_board[i + 1][j + 1] == 9) { bombs_count++; }
-			if (hided_board[i - 1][j - 1] == 9) { bombs_count++; }
-			if (hided_board[i - 1][j + 1] == 9) { bombs_count++; }
-			if (hided_board[i + 1][j - 1] == 9) { bombs_count++; }
-			hided_board[i][j] = bombs_count;
+			for (const auto& offset : offsets) {
+				int neighbor_x = i + offset[0];
+				int neighbor_y = j + offset[1];
+				if (isValidCell(neighbor_x, neighbor_y) && this->hided_board[neighbor_x][neighbor_y] == 9) {
+					bombs_count++;
+				}
+			}
+			this->hided_board[i][j] = bombs_count;
 		}
 	}
 }
@@ -47,8 +55,12 @@ void Game::loadAllAssets() {
 	font_.loadFromFile("../../../src/fonts/arial.ttf");
 
 	// Load eplosion sound
-	buffer_.loadFromFile("../../../src/sounds/explosion.mp3");
-	eplosion_sound_.setBuffer(buffer_);
+	buffer_exp_snd_.loadFromFile("../../../src/sounds/explosion.mp3");
+	eplosion_sound_.setBuffer(buffer_exp_snd_);
+
+	// Load win sound
+	buffer_win_snd_.loadFromFile("../../../src/sounds/win.mp3");
+	win_sound_.setBuffer(buffer_win_snd_);
 
 	// Set flags count
 	display_flags_.setFont(font_);
@@ -78,20 +90,39 @@ void Game::openEmptyCells(int x, int y) {
 void Game::displayCells() {
 	for (int i = 0; i < BOARD_SIZE; ++i) {
 		for (int j = 0; j < BOARD_SIZE; ++j) {
-			if (game_board[i][j] == 9) { game_board[i][j] = hided_board[i][j]; }
-			sprite_.setTextureRect(sf::IntRect(game_board[i][j] * cell_width_, 0, cell_width_, cell_width_));
+			if (this->game_board[i][j] == 9) { this->game_board[i][j] = this->hided_board[i][j]; }
+			sprite_.setTextureRect(sf::IntRect(this->game_board[i][j] * cell_width_, 0, cell_width_, cell_width_));
 			sprite_.setPosition(i * cell_width_, (j + 2) * cell_width_);
 			wnd_.draw(sprite_);
 		}
 	}
 }
 
+// After deth show bombs positions
 void Game::showAllBombs() {
 	for (int i = 0; i < BOARD_SIZE; ++i) {
 		for (int j = 0; j < BOARD_SIZE; ++j) {
-			if (hided_board[i][j] == 9 && game_board[i][j] != 11) { game_board[i][j] = hided_board[i][j]; }
+			if ((this->hided_board[i][j] == 9 && this->game_board[i][j] != 11) || 
+				(this->game_board[i][j] == 11 && this->hided_board[i][j] != 9)) { 
+				this->game_board[i][j] = this->hided_board[i][j];
+			}
 		}
 	}
+}
+
+// Check is all cells open except cells with flag
+bool Game::isAllCellOpen() {
+	for (int i = 0; i < BOARD_SIZE; ++i) {
+		for (int j = 0; j < BOARD_SIZE; ++j) {
+			if (this->game_board[i][j] == 11) { continue; }
+			if (this->game_board[i][j] > 9) { return false; }
+		}
+	}
+	return true;
+}
+
+bool Game::isValidCell(int x, int y) {
+	return x >= 0 && x < BOARD_SIZE && y >= 0 && y < BOARD_SIZE;
 }
 
 // Start the game
@@ -104,35 +135,37 @@ void Game::Start() {
 		sf::Vector2i mouse_position = sf::Mouse::getPosition(wnd_);
 		int pos_x = mouse_position.x / cell_width_, pos_y = mouse_position.y / cell_width_ - 2;
 		sf::Event event;
-		if (!is_alive_) {
-			display_flags_.setPosition(120, 10);
-			display_flags_.setString("DEAD"); 
-			showAllBombs(); 
-		}
-		if (flags_ == 0 && guessed_positions_ == bombs_) { 
-			display_flags_.setPosition(120, 10);
-			display_flags_.setString("WIN"); 
-			is_alive_ = false; 
-		}
+		
+		
 		while (wnd_.pollEvent(event)) {
 			if (event.type == sf::Event::Closed) { wnd_.close(); }
 			if (event.type == sf::Event::MouseButtonPressed) {
 				if (is_alive_ && event.key.code == sf::Mouse::Right) { 
-					if (game_board[pos_x][pos_y] == 10) { game_board[pos_x][pos_y] = 11; flags_--; }
-					if (game_board[pos_x][pos_y] == 11 && hided_board[pos_x][pos_y] == 9) { guessed_positions_++; }
+					if (this->game_board[pos_x][pos_y] == 10) { this->game_board[pos_x][pos_y] = 11; flags_--; }
+					if (this->game_board[pos_x][pos_y] == 11 && this->hided_board[pos_x][pos_y] == 9) { guessed_positions_++; }
 				}
 				if (is_alive_ && event.key.code == sf::Mouse::Left) {
 					if (game_board[pos_x][pos_y] == 10) {
-						if (hided_board[pos_x][pos_y] == 0) { openEmptyCells(pos_x, pos_y); }
-						if (hided_board[pos_x][pos_y] == 9) { eplosion_sound_.play();  is_alive_ = false; }
-						game_board[pos_x][pos_y] = hided_board[pos_x][pos_y];
+						if (this->hided_board[pos_x][pos_y] == 0) { openEmptyCells(pos_x, pos_y); }
+						if (this->hided_board[pos_x][pos_y] == 9) { eplosion_sound_.play();  is_alive_ = false; }
+						this->game_board[pos_x][pos_y] = this->hided_board[pos_x][pos_y];
 					}
-					if (game_board[pos_x][pos_y] == 11) { game_board[pos_x][pos_y] = 10; flags_++; } 
+					if (this->game_board[pos_x][pos_y] == 11) { this->game_board[pos_x][pos_y] = 10; flags_++; }
 				}
+				if (is_alive_ && (flags_ == 0 && guessed_positions_ == bombs_ && isAllCellOpen())) { win_sound_.play(); win_ = true; }
 			}
 			if (event.type == sf::Event::KeyPressed) { if (event.key.code == sf::Keyboard::R) { initBoard(); } }
 		}
-		
+		if (!is_alive_) {
+			display_flags_.setPosition(120, 10);
+			display_flags_.setString("DEAD");
+			showAllBombs();
+		}
+		if (win_) {
+			display_flags_.setPosition(120, 10);
+			display_flags_.setString("WIN");
+			is_alive_ = false;
+		}
 		wnd_.clear(sf::Color::White);
 		displayCells();
 		wnd_.draw(display_flags_);

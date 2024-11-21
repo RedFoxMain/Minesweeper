@@ -17,8 +17,8 @@ private:
 	sf::Texture texture_;
 	sf::Sprite sprite_;
 	sf::Font font_;
-	sf::SoundBuffer buffer_;
-	sf::Sound eplosion_sound_;
+	sf::SoundBuffer buffer_exp_snd_, buffer_win_snd_;
+	sf::Sound eplosion_sound_, win_sound_;
 	sf::Image icon_;
 	sf::Text display_flags_;
 	sf::RenderWindow wnd_;
@@ -30,6 +30,8 @@ private:
 	void openEmptyCells(int, int); // Open Empty Cell around Cell
 	void displayCells(); // Draw all cells
 	void showAllBombs(); // After deth show bombs positions
+	bool isAllCellOpen(); // Check is all cells open except cells with flag
+	bool isValidCell(int, int); // Check is cell is valid
 	 
 public:
 	Game() = default;
