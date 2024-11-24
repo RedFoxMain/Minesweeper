@@ -1,4 +1,7 @@
 #include "game.h"
+#include <SFGUI/SFGUI.hpp>
+#include <SFGUI/Widget.hpp>
+
 
 // Create board
 void Game::initBoard() {
@@ -90,9 +93,11 @@ void Game::openEmptyCells(int x, int y) {
 void Game::displayCells() {
 	for (int i = 0; i < BOARD_SIZE; ++i) {
 		for (int j = 0; j < BOARD_SIZE; ++j) {
-			if (this->game_board[i][j] == 9) { this->game_board[i][j] = this->hided_board[i][j]; }
+			if (this->game_board[i][j] == 9) {
+				this->game_board[i][j] = this->hided_board[i][j];
+			}
 			sprite_.setTextureRect(sf::IntRect(this->game_board[i][j] * cell_width_, 0, cell_width_, cell_width_));
-			sprite_.setPosition(i * cell_width_, (j + 2) * cell_width_);
+			sprite_.setPosition(i * cell_width_, (j+2) * cell_width_); 
 			wnd_.draw(sprite_);
 		}
 	}
@@ -127,7 +132,7 @@ bool Game::isValidCell(int x, int y) {
 
 // Start the game
 void Game::Start() {
-	wnd_.create(sf::VideoMode(cell_width_ * BOARD_SIZE, (cell_width_ + 6.4) * BOARD_SIZE), "Minesweeper", sf::Style::Titlebar | sf::Style::Close);
+	wnd_.create(sf::VideoMode(cell_width_ * BOARD_SIZE, (cell_width_ + 6.4) * BOARD_SIZE), "Minesweeper", sf::Style::Titlebar | sf::Style::Close); 
 	initBoard(); // Init board hide mines and count them and load all assets
 
 	while (wnd_.isOpen()) {
