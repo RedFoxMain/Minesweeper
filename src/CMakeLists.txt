@@ -5,8 +5,6 @@ if (POLICY CMP0141)
   set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
 endif()
 
-set(CMAKE_CURRENT)
-
 # SFML
 find_package(SFML COMPONENTS system window graphics CONFIG REQUIRED)
 
@@ -16,8 +14,10 @@ find_package(SFGUI REQUIRED)
 set(
 	SOURCES_FILES
 	"main.cpp"
-	"game.cpp"
-	"game.h"
+	"GameLogic/game.cpp"
+	"GameLogic/game.h"
+	"Menu/menu.cpp"
+	"Menu/menu.h"
 )
 
 add_executable (${PROJECT_NAME} WIN32 ${SOURCES_FILES})

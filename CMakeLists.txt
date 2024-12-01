@@ -11,5 +11,6 @@ endif()
 
 project ("CMakeProject1")
 
+set(PATH_TO_ASSETS "${PROJECT_SOURCE_DIR}/src")
 # Include sub-projects.
 add_subdirectory("src")

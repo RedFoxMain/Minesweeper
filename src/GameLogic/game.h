@@ -20,7 +20,6 @@ private:
 	sf::SoundBuffer buffer_exp_snd_, buffer_win_snd_;
 	sf::Sound eplosion_sound_, win_sound_;
 	sf::Image icon_;
-	sf::Text display_flags_;
 	sf::RenderWindow wnd_;
 
 private:

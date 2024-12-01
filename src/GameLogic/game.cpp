@@ -1,4 +1,5 @@
 #include "game.h"
+#include "../Menu/menu.h"
 #include <SFGUI/SFGUI.hpp>
 
 // Create board
@@ -61,12 +62,6 @@ void Game::loadAllAssets() {
 	// Load win sound
 	buffer_win_snd_.loadFromFile("../../../../src/sounds/win.mp3");
 	win_sound_.setBuffer(buffer_win_snd_);
-
-	// Set flags count
-	display_flags_.setFont(font_);
-	display_flags_.setCharacterSize(32);
-	display_flags_.setFillColor(sf::Color::Black);
-	display_flags_.setPosition(140, 10);
 }
 
 // Open empty cells around
@@ -94,7 +89,7 @@ void Game::displayCells() {
 				this->game_board[i][j] = this->hided_board[i][j];
 			}
 			sprite_.setTextureRect(sf::IntRect(this->game_board[i][j] * cell_width_, 0, cell_width_, cell_width_));
-			sprite_.setPosition(i * cell_width_, (j + 2) * cell_width_);
+			sprite_.setPosition(i * cell_width_, j * cell_width_);
 			wnd_.draw(sprite_);
 		}
 	}
@@ -129,17 +124,13 @@ bool Game::isValidCell(int x, int y) {
 
 // Start the game
 void Game::start() {
-	wnd_.create(sf::VideoMode(cell_width_ * BOARD_SIZE, (cell_width_ + 6.4) * BOARD_SIZE), "Minesweeper", sf::Style::Titlebar | sf::Style::Close);
-	sfg::SFGUI sfgui;
+	wnd_.create(sf::VideoMode(cell_width_ * BOARD_SIZE, cell_width_ * BOARD_SIZE), "Minesweeper", sf::Style::Titlebar | sf::Style::Close);
 	initBoard(); // Init board hide mines and count them and load all assets
 
 	while (wnd_.isOpen()) {
-		display_flags_.setString(std::to_string(flags_));
 		sf::Vector2i mouse_position = sf::Mouse::getPosition(wnd_);
-		int pos_x = mouse_position.x / cell_width_, pos_y = mouse_position.y / cell_width_ - 2;
+		int pos_x = mouse_position.x / cell_width_, pos_y = mouse_position.y / cell_width_;
 		sf::Event event;
-
-
 		while (wnd_.pollEvent(event)) {
 			if (event.type == sf::Event::Closed) { wnd_.close(); }
 			if (event.type == sf::Event::MouseButtonPressed) {
@@ -157,21 +148,21 @@ void Game::start() {
 				}
 				if (is_alive_ && (flags_ == 0 && guessed_positions_ == bombs_ && isAllCellOpen())) { win_sound_.play(); win_ = true; }
 			}
-			if (event.type == sf::Event::KeyPressed) { if (event.key.code == sf::Keyboard::R) { initBoard(); } }
+			if (event.type == sf::Event::KeyPressed) { 
+				if (event.key.code == sf::Keyboard::R) { initBoard(); } 
+				if (event.key.code == sf::Keyboard::C) {}
+			}
 		}
 		if (!is_alive_) {
-			display_flags_.setPosition(120, 10);
-			display_flags_.setString("DEAD");
+			// Print Dead
 			showAllBombs();
 		}
 		if (win_) {
-			display_flags_.setPosition(120, 10);
-			display_flags_.setString("WIN");
+			// Print Win
 			is_alive_ = false;
 		}
 		wnd_.clear(sf::Color::White);
 		displayCells();
-		wnd_.draw(display_flags_);
 		wnd_.display();
 	}
 }
