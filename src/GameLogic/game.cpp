@@ -1,6 +1,4 @@
 #include "game.h"
-#include "../Menu/menu.h"
-#include <SFGUI/SFGUI.hpp>
 
 // Create board
 void Game::initBoard() {
@@ -126,7 +124,6 @@ bool Game::isValidCell(int x, int y) {
 void Game::start() {
 	wnd_.create(sf::VideoMode(cell_width_ * BOARD_SIZE, cell_width_ * BOARD_SIZE), "Minesweeper", sf::Style::Titlebar | sf::Style::Close);
 	initBoard(); // Init board hide mines and count them and load all assets
-
 	while (wnd_.isOpen()) {
 		sf::Vector2i mouse_position = sf::Mouse::getPosition(wnd_);
 		int pos_x = mouse_position.x / cell_width_, pos_y = mouse_position.y / cell_width_;
@@ -150,17 +147,11 @@ void Game::start() {
 			}
 			if (event.type == sf::Event::KeyPressed) { 
 				if (event.key.code == sf::Keyboard::R) { initBoard(); } 
-				if (event.key.code == sf::Keyboard::C) {}
+				
 			}
 		}
-		if (!is_alive_) {
-			// Print Dead
-			showAllBombs();
-		}
-		if (win_) {
-			// Print Win
-			is_alive_ = false;
-		}
+		if (!is_alive_) { showAllBombs(); }
+		if (win_) { is_alive_ = false; }
 		wnd_.clear(sf::Color::White);
 		displayCells();
 		wnd_.display();

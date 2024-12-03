@@ -8,17 +8,12 @@ endif()
 # SFML
 find_package(SFML COMPONENTS system window graphics CONFIG REQUIRED)
 
-# SFGUI
-find_package(SFGUI REQUIRED)
-
 set(
 	SOURCES_FILES
 	"main.cpp"
 	"GameLogic/game.cpp"
 	"GameLogic/game.h"
-	"Menu/menu.cpp"
-	"Menu/menu.h"
 )
 
 add_executable (${PROJECT_NAME} WIN32 ${SOURCES_FILES})
-target_link_libraries(${PROJECT_NAME} PRIVATE sfml-audio sfml-graphics SFGUI::SFGUI)
+target_link_libraries(${PROJECT_NAME} PRIVATE sfml-audio sfml-graphics)
