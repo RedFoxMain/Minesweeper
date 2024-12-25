@@ -12,6 +12,8 @@ set(
 	"src/game.cpp"
 	"src/game.h"
 )
+configure_file( "src/config.h.in" ${CMAKE_BINARY_DIR}/config.h )
+include_directories( ${CMAKE_BINARY_DIR} )
 
 # Find SFML
 set( SFML_DIR "${CMAKE_SOURCE_DIR}/external/SFML/lib/cmake/SFML" )

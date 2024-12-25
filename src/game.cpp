@@ -1,4 +1,5 @@
 #include "game.h"
+#include "config.h"
 
 // Create board
 void Game::initBoard() {
@@ -43,22 +44,22 @@ void Game::countMines() {
 // Load all images, sounds and fonts
 void Game::loadAllAssets() {
 	// Load main assets
-	texture_.loadFromFile("../../../src/images/tiles.jpg");
+	texture_.loadFromFile(LOAD_RESOURCE("images/tiles.jpg")); 
 	sprite_.setTexture(texture_);
 
 	// Set icon to window
-	icon_.loadFromFile("../../../src/images/main_icon.png"); // Set icon to window
+	icon_.loadFromFile(LOAD_RESOURCE("images/main_icon.png")); // Set icon to window
 	wnd_.setIcon(icon_.getSize().x, icon_.getSize().y, icon_.getPixelsPtr());
 
 	// Load Font
-	font_.loadFromFile("../../../src/fonts/arial.ttf");
+	font_.loadFromFile(LOAD_RESOURCE("fonts/arial.ttf"));
 
 	// Load eplosion sound
-	buffer_exp_snd_.loadFromFile("../../../src/sounds/explosion.mp3");
+	buffer_exp_snd_.loadFromFile(LOAD_RESOURCE("sounds/explosion.mp3"));
 	eplosion_sound_.setBuffer(buffer_exp_snd_);
 
 	// Load win sound
-	buffer_win_snd_.loadFromFile("../../../src/sounds/win.mp3");
+	buffer_win_snd_.loadFromFile(LOAD_RESOURCE("sounds/win.mp3"));
 	win_sound_.setBuffer(buffer_win_snd_);
 }
 
