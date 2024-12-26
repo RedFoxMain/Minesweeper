@@ -16,7 +16,6 @@ private:
 
 	sf::Texture texture_;
 	sf::Sprite sprite_;
-	sf::Font font_;
 	sf::SoundBuffer buffer_exp_snd_, buffer_win_snd_;
 	sf::Sound eplosion_sound_, win_sound_;
 	sf::Image icon_;

@@ -48,11 +48,8 @@ void Game::loadAllAssets() {
 	sprite_.setTexture(texture_);
 
 	// Set icon to window
-	icon_.loadFromFile(LOAD_RESOURCE("images/main_icon.png")); // Set icon to window
+	icon_.loadFromFile(LOAD_RESOURCE("images/main_icon.png"));
 	wnd_.setIcon(icon_.getSize().x, icon_.getSize().y, icon_.getPixelsPtr());
-
-	// Load Font
-	font_.loadFromFile(LOAD_RESOURCE("fonts/arial.ttf"));
 
 	// Load eplosion sound
 	buffer_exp_snd_.loadFromFile(LOAD_RESOURCE("sounds/explosion.mp3"));
