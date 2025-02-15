@@ -1,5 +1,4 @@
 #include "game.h"
-#include "config.h"
 
 // Create board
 void Game::initBoard() {
@@ -44,19 +43,19 @@ void Game::countMines() {
 // Load all images, sounds and fonts
 void Game::loadAllAssets() {
 	// Load main assets
-	texture_.loadFromFile(LOAD_RESOURCE("images/tiles.jpg")); 
+	texture_.loadFromFile("resources/images/tiles.jpg");
 	sprite_.setTexture(texture_);
 
 	// Set icon to window
-	icon_.loadFromFile(LOAD_RESOURCE("images/main_icon.png"));
+	icon_.loadFromFile("resources/images/main_icon.png");
 	wnd_.setIcon(icon_.getSize().x, icon_.getSize().y, icon_.getPixelsPtr());
 
 	// Load eplosion sound
-	buffer_exp_snd_.loadFromFile(LOAD_RESOURCE("sounds/explosion.mp3"));
+	buffer_exp_snd_.loadFromFile("resources/sounds/explosion.mp3");
 	eplosion_sound_.setBuffer(buffer_exp_snd_);
 
 	// Load win sound
-	buffer_win_snd_.loadFromFile(LOAD_RESOURCE("sounds/win.mp3"));
+	buffer_win_snd_.loadFromFile("resources/sounds/win.mp3");
 	win_sound_.setBuffer(buffer_win_snd_);
 }
 

@@ -1,6 +1,0 @@
-#ifndef CONFIG_H
-#define CONFIG_H
-
-#define LOAD_RESOURCE(name) "${CMAKE_SOURCE_DIR}/resources/" ## name
-
-#endif
