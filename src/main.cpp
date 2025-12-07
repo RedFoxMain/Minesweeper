@@ -198,4 +198,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine,
 		wnd->draw(*flags_cnt_text);
 		wnd->display();
 	}
+	delete wnd;
+	delete flags_cnt_text;
+	delete sprite;
+	delete buffer_exp_snd;
+	delete buffer_win_snd;
+	delete explosion_sound;
+	delete win_sound;
 }
